@@ -1,4 +1,5 @@
 const moment = require('moment');
+const { prefix } = require('../config.json');
 
 module.exports = {
   name: 'messageCreate',
@@ -11,47 +12,27 @@ module.exports = {
     const channelName = message.channel.name || 'DM';
     const content = message.content;
 
-    // Log format exactly as requested
+    // Log every message
     console.log(`[${time}] #${channelName} | ${userTag} (${userID}): ${content}`);
 
-    // Command handling
-    const prefix = '\\';
+    // Check for prefix commands
     if (!content.startsWith(prefix)) return;
 
     const args = content.slice(prefix.length).trim().split(/ +/);
-    const commandName = args.shift().toLowerCase();
-    const command = message.client.commands.get(commandName);
+    const commandName = args.shift()?.toLowerCase();
+    if (!commandName) return;
 
+    const command = message.client.commands.get(commandName);
     if (!command) return;
+
+    // Log command use to console
+    console.log(`[COMMAND] ${userTag} used \\${commandName}`);
 
     try {
       await command.execute(message, args);
     } catch (err) {
-      console.error(`[${time}] [ERROR] while executing ${prefix}${commandName}:`, err);
+      console.error(`[${time}] [ERROR] while executing \\${commandName}:`, err);
       message.reply('There was an error executing that command.');
     }
-
-
-    if (message.content.startsWith(prefix)) {
-      const commandName = args.shift().toLowerCase();
-      const command = client.commands.get(commandName);
-      
-      if (!command) return;
-    
-      console.log(`[COMMAND] ${message.author.tag} used \\${commandName}`);
-    
-      const logChannel = message.guild.channels.cache.get('1140444333359763486');
-      if (logChannel) {
-        logChannel.send(`🧠 **Command Used:** \`${commandName}\` by ${message.author.tag}`);
-      }
-    
-      try {
-        command.execute(message, args);
-      } catch (error) {
-        console.error(error);
-        message.reply('There was an error executing that command.');
-      }
-    }
-    
   }
 };
